@@ -21,8 +21,8 @@ No final de cada ronda, o jogador pode escolher continuar, desde que existam car
 1. O baralho é criado e baralhado no início do programa.
 2. É retirada uma carta e apresentada ao jogador.
 3. O jogador escolhe:
-   - `A` — a próxima carta terá um valor mais alto;
-   - `B` — a próxima carta terá um valor mais baixo.
+   - `H` — a próxima carta terá um valor mais alto;
+   - `L` — a próxima carta terá um valor mais baixo.
 4. A próxima carta é retirada e apresentada.
 5. Se a previsão estiver correta, o jogador ganha um ponto e a carta revelada passa a ser a carta atual.
 6. Se a previsão estiver errada ou as cartas tiverem o mesmo valor, a ronda termina.
