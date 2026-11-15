@@ -38,7 +38,7 @@ public abstract class Player {
 
     // Devolve o histórico de pontuações 
     public ArrayList<Integer> getScoreHistory() {
-        return scoreHistory;
+        return new ArrayList<>(scoreHistory);
     }
 
     // Regista a pontuação de cada ronda
