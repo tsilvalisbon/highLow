@@ -11,12 +11,6 @@ public class NormalPlayer extends Player {
         super(name);
     }
 
-    // Define o início da ronda
-    @Override
-    public void startround(){
-        System.out.println(getName() + " começou a ronda.");
-    }
-
     // O jogador normal não tem oportunidade de fazer uma segunda previsão
     @Override
     public boolean canRetry(){

@@ -72,9 +72,11 @@ public abstract class Player {
     }
 
     // Método para iniciar uma ronda
-    public abstract void startRound();
+    public void startRound()
+    {
+        System.out.println(getName() + " começou a ronda.");
+    }
 
     // Método para indicar se o jogador pode ter mais uma tentativa
     public abstract boolean canRetry();
-
 }

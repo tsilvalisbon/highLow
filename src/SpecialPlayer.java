@@ -14,12 +14,6 @@ public class SpecialPlayer extends Player {
         this.retryUsed = false; // Inicialmente a segunda previsão não foi utilizada
     }
 
-    // Define o início da ronda
-    @Override
-    public void startround(){
-        System.out.println(getName() + " começou a ronda.");
-    }
-
     // Verfica se o jogador ainda pode usar a segunda previsão
     @Override
     public boolean canRetry(){
