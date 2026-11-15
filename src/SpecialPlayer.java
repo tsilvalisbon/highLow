@@ -25,4 +25,10 @@ public class SpecialPlayer extends Player {
         // Se já usou, não pode prever outra vez
         return false;
     }
+
+    @Override
+    public void startRound() {
+        super.startRound();
+        retryUsed = false;
+    }
 }
