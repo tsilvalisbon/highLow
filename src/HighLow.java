@@ -8,6 +8,29 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class HighLow {
+
+    private static String readOption(Scanner scanner, String message, String... options) {
+
+        System.out.print(message);
+        String choice = scanner.nextLine().trim().toUpperCase();
+
+        // Repetir enquanto a resposta não for válida
+        while (true) {
+        for (String option : options) {
+            if (choice.equals(option)) {
+                return choice;
+            }
+        }
+
+        System.out.print("Escolha inválida. Tenta novamente: ");
+        choice = scanner.nextLine().trim().toUpperCase();
+        }
+    }
+
+    private static boolean isCorrect(String choice, int currentValue, int nextValue) {
+    return (choice.equals("H") && nextValue > currentValue) || (choice.equals("L") && nextValue < currentValue);
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         ArrayList<Player> players = new ArrayList<>();
@@ -48,12 +71,7 @@ public class HighLow {
                 System.out.print("O nome não pode estar vazio. Nome: ");
                 name = scanner.nextLine().trim();
             }
-            System.out.print("Tipo de jogador - Normal (N) ou Especial (E): ");
-            String type = scanner.nextLine().trim().toUpperCase();
-            while (!type.equals("N") && !type.equals("E")) {
-                System.out.print("Escolha inválida. Escreve N ou E: ");
-                type = scanner.nextLine().trim().toUpperCase();
-            }
+            String type = readOption(scanner, "Tipo de jogador - Normal (N) ou Especial (E): ", "N", "E");
             if (type.equals("N")) {
                 players.add(new NormalPlayer(name));
             } else {
@@ -77,14 +95,7 @@ public class HighLow {
             // Continuar a ronda enquanto o jogador acertar e existirem cartas
             while (roundActive && deck.cardsLeft() > 0) {
                 System.out.println("\nCarta atual: " + currentCard);
-                System.out.print("Próxima carta é mais alta (H) ou mais baixa (L)? ");
-                String choice = scanner.nextLine().trim().toUpperCase();
-
-                // Validar a escolha
-                while (!choice.equals("H") && !choice.equals("L")) {
-                    System.out.print("Escolha inválida. Escreve H ou L: ");
-                    choice = scanner.nextLine().trim().toUpperCase();
-                }
+                String choice = readOption(scanner, "Próxima carta é mais alta (H) ou mais baixa (L)? ", "H", "L");
 
                 Card nextCard = deck.dealCard();
                 System.out.println("Carta seguinte: " + nextCard);
@@ -96,8 +107,7 @@ public class HighLow {
                 if (nextValue == currentValue) {
                     System.out.println("As cartas têm o mesmo valor! A ronda terminou.");
                     roundActive = false;
-                } else if ((choice.equals("H") && nextValue > currentValue)
-                        || (choice.equals("L") && nextValue < currentValue)) {
+                } else if (isCorrect(choice, currentValue, nextValue)) {
                     pointsRound++;
                     correctGuesses++;
                     System.out.println("Acertaste! Pontuação da ronda: " + pointsRound);
@@ -108,20 +118,13 @@ public class HighLow {
                     // O jogador especial pode tentar outra vez uma vez por ronda
                     if (player.canRetry()) {
                         System.out.println("Tens direito a uma segunda previsão para a mesma carta.");
-                        System.out.print("Mais alta (H) ou mais baixa (L)? ");
-                        String secondChoice = scanner.nextLine().trim().toUpperCase();
+                        String secondChoice = readOption(scanner, "Mais alta (H) ou mais baixa (L)? ", "H", "L");
 
-                        while (!secondChoice.equals("H") && !secondChoice.equals("L")) {
-                            System.out.print("Escolha inválida. Escreve H ou L: ");
-                            secondChoice = scanner.nextLine().trim().toUpperCase();
-                        }
-
-                        if ((secondChoice.equals("H") && nextValue > currentValue)
-                                || (secondChoice.equals("L") && nextValue < currentValue)) {
-                            pointsRound++;
-                            correctGuesses++;
-                            System.out.println("Acertaste na segunda previsão!");
-                            currentCard = nextCard;
+                    if (isCorrect(secondChoice, currentValue, nextValue)) {
+                        pointsRound++;
+                        correctGuesses++;
+                        System.out.println("Acertaste na segunda previsão!");
+                        currentCard = nextCard;
                         } else {
                             System.out.println("Erraste novamente! A ronda terminou.");
                             roundActive = false;
@@ -144,12 +147,7 @@ public class HighLow {
             System.out.println("Rondas do jogador: " + player.getRoundNumber());
 
             // Perguntar se o torneio deve continuar
-            System.out.print("\nQueres continuar o torneio? (S/N): ");
-            String answer = scanner.nextLine().trim().toUpperCase();
-            while (!answer.equals("S") && !answer.equals("N")) {
-                System.out.print("Resposta inválida. Escreve S ou N: ");
-                answer = scanner.nextLine().trim().toUpperCase();
-            }
+            String answer = readOption(scanner, "\nQueres continuar o torneio? (S/N): ", "S", "N");
             continuePlaying = answer.equals("S");
 
             // Passar ao jogador seguinte e voltar ao primeiro no fim da lista
