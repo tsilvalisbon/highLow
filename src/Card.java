@@ -26,6 +26,6 @@ public class Card {
     // Método que retorna a representação da carta em texto
     @Override
     public String toString(){
-        return "Valor da carta: " + value + " Naipe: " + suit;
+        return "Valor: " + value + " Naipe: " + suit;
     }
 }
