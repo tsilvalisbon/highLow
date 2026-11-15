@@ -9,6 +9,7 @@ import java.util.Scanner;
 
 public class HighLow {
 
+    // Método static que valida uma opção introduzida pelo utilizador
     private static String readOption(Scanner scanner, String message, String... options) {
 
         System.out.print(message);
@@ -27,6 +28,7 @@ public class HighLow {
         }
     }
 
+    // Método static que verifica se a previsão do jogador está correta
     private static boolean isCorrect(String choice, int currentValue, int nextValue) {
     return (choice.equals("H") && nextValue > currentValue) || (choice.equals("L") && nextValue < currentValue);
     }
@@ -48,6 +50,7 @@ public class HighLow {
         // Registar os jogadores antes de começar o torneio
         System.out.print("Quantos jogadores vão participar? ");
         int numberOfPlayers = 0;
+
         // Validar a entrada do número de jogadores
         while (numberOfPlayers <= 0) {
             if (!scanner.hasNext()) {
@@ -55,22 +58,30 @@ public class HighLow {
                 scanner.close();
                 return;
             }
-            if (scanner.hasNextInt())
+            // Verificar se a resposta é um número inteiro
+            if (scanner.hasNextInt()){
                 numberOfPlayers = scanner.nextInt();
-            else 
+            } else {
                 scanner.next();
-            if (numberOfPlayers <= 0) 
+            }
+            // Impedir a introdução de zero ou números negativos
+            if (numberOfPlayers <= 0) {
                 System.out.print("Número inválido. Insere um número maior que zero: ");
+            }
         }
         scanner.nextLine();
+
+        // Criar e registar os jogadores
         for (int i = 0; i < numberOfPlayers; i++) {
             System.out.println("\nJOGADOR " + (i + 1));
             System.out.print("Nome: ");
             String name = scanner.nextLine().trim();
+
             while (name.isEmpty()) {
                 System.out.print("O nome não pode estar vazio. Nome: ");
                 name = scanner.nextLine().trim();
             }
+            // Escolhe o tipo de jogador
             String type = readOption(scanner, "Tipo de jogador - Normal (N) ou Especial (E): ", "N", "E");
             if (type.equals("N")) {
                 players.add(new NormalPlayer(name));
@@ -81,6 +92,8 @@ public class HighLow {
 
         // O torneio continua enquanto o utilizador quiser jogar
         while (continuePlaying) {
+
+            // Obter o jogador atual através do seu índice na lista
             Player player = players.get(playerIndex);
             Deck deck = new Deck(); // Cria e baralha um novo baralho em cada ronda
             Card currentCard = deck.dealCard();
@@ -95,11 +108,13 @@ public class HighLow {
             // Continuar a ronda enquanto o jogador acertar e existirem cartas
             while (roundActive && deck.cardsLeft() > 0) {
                 System.out.println("\nCarta atual: " + currentCard);
+                // Pedir ao jogador para prever se a próxima carta será maior ou menor
                 String choice = readOption(scanner, "Próxima carta é mais alta (H) ou mais baixa (L)? ", "H", "L");
 
                 Card nextCard = deck.dealCard();
                 System.out.println("Carta seguinte: " + nextCard);
 
+                // Compara os valores das duas cartas
                 int currentValue = currentCard.getValue();
                 int nextValue = nextCard.getValue();
 
@@ -107,6 +122,7 @@ public class HighLow {
                 if (nextValue == currentValue) {
                     System.out.println("As cartas têm o mesmo valor! A ronda terminou.");
                     roundActive = false;
+                // Se a previsão estiver correta, a ronda continua; caso contrário, verifica se o jogador pode tentar novamente
                 } else if (isCorrect(choice, currentValue, nextValue)) {
                     pointsRound++;
                     correctGuesses++;
@@ -115,11 +131,12 @@ public class HighLow {
                 } else {
                     System.out.println("Erraste a previsão!");
 
-                    // O jogador especial pode tentar outra vez uma vez por ronda
+                    // O jogador especial pode tentar outra vez, uma vez por ronda
                     if (player.canRetry()) {
                         System.out.println("Tens direito a uma segunda previsão para a mesma carta.");
                         String secondChoice = readOption(scanner, "Mais alta (H) ou mais baixa (L)? ", "H", "L");
 
+                    // Verificar se a segunda previsão está correta
                     if (isCorrect(secondChoice, currentValue, nextValue)) {
                         pointsRound++;
                         correctGuesses++;
@@ -136,7 +153,7 @@ public class HighLow {
                 }
             }
 
-            // Guardar os resultados da ronda no jogador
+            // Guardar os resultados da ronda do jogador
             player.registerRound(pointsRound);
             totalPoints += pointsRound;
 
