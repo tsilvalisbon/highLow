@@ -6,7 +6,7 @@ package highLow.src;
 
 public class NormalPlayer extends Player {
     
-    // Construtor da classe que chama o contrutor da superclasse Player
+    // Construtor que inicializa o jogador através da superclasse Player
     public NormalPlayer(String name){
         super(name);
     }

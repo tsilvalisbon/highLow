@@ -8,7 +8,7 @@ public class SpecialPlayer extends Player {
     
     private boolean retryUsed;
 
-    // Construtor da classe que chama o construtor da superclasse Player
+    // Construtor que inicializa o jogador através da superclasse Player
     public SpecialPlayer(String name){
         super(name);
         this.retryUsed = false; // Inicialmente a segunda previsão não foi utilizada

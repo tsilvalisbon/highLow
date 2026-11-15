@@ -21,7 +21,7 @@ public abstract class Player {
         this.scoreHistory = new ArrayList<>();
     }
 
-    // Devolve o nome
+    // Devolve o nome do jogador
     public String getName(){
         return name;
     }
@@ -31,7 +31,7 @@ public abstract class Player {
         return totalScore;
     }
 
-    // Devolve o número de rondas jogadas
+    // Devolve o número de rondas realizadas
     public int getRoundNumber(){
         return roundsPlayed;
     }
