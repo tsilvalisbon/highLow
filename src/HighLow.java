@@ -4,129 +4,192 @@
 
 package highLow.src;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class HighLow {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        // Cria o baralho e graças ao construtor Deck() em Deck.java o baralho é baralhado
-        Deck deck = new Deck();
+        ArrayList<Player> players = new ArrayList<>();
 
-        // Variáveis que guardam os resultados do jogo
+        // Variáveis que guardam os resultados gerais do torneio
         int roundsPlayed = 0;
         int totalPoints = 0;
+        int correctGuesses = 0;
+        int playerIndex = 0;
         boolean continuePlaying = true;
 
-        // Instruções do jogo
-        System.out.println("Bem-vindo ao jogo HighLow!");
-        System.out.println("O objetivo é adivinhar se a próxima carta tem um valor maior ou menor.");
-        System.out.println("Ganhas um ponto por cada opção correta, mas se errares ou as cartas forem do mesmo valor, a ronda termina."); 
+        System.out.println("Bem-vindo ao torneio HighLow!");
+        System.out.println("O objetivo é adivinhar se a próxima carta é mais alta (H) ou mais baixa (L).");
 
-        // Cada ronda precisa de pelo menos duas cartas para o jogo continuar
-        while (continuePlaying && deck.cardsLeft() >= 2) {
-            roundsPlayed++; // Aumenta o número de rondas sempre que começa uma nova
+        // Registar os jogadores antes de começar o torneio
+        System.out.print("Quantos jogadores vão participar? ");
+        int numberOfPlayers = 0;
+        // Validar a entrada do número de jogadores
+        while (numberOfPlayers <= 0) {
+            if (!scanner.hasNext()) {
+                System.out.println("\nEntrada terminada. Registo cancelado.");
+                scanner.close();
+                return;
+            }
+            if (scanner.hasNextInt())
+                numberOfPlayers = scanner.nextInt();
+            else 
+                scanner.next();
+            if (numberOfPlayers <= 0) 
+                System.out.print("Número inválido. Insere um número maior que zero: ");
+        }
+        scanner.nextLine();
+        for (int i = 0; i < numberOfPlayers; i++) {
+            System.out.println("\nJOGADOR " + (i + 1));
+            System.out.print("Nome: ");
+            String name = scanner.nextLine().trim();
+            while (name.isEmpty()) {
+                System.out.print("O nome não pode estar vazio. Nome: ");
+                name = scanner.nextLine().trim();
+            }
+            System.out.print("Tipo de jogador - Normal (N) ou Especial (E): ");
+            String type = scanner.nextLine().trim().toUpperCase();
+            while (!type.equals("N") && !type.equals("E")) {
+                System.out.print("Escolha inválida. Escreve N ou E: ");
+                type = scanner.nextLine().trim().toUpperCase();
+            }
+            if (type.equals("N")) {
+                players.add(new NormalPlayer(name));
+            } else {
+                players.add(new SpecialPlayer(name));
+            }
+        }
+
+        // O torneio continua enquanto o utilizador quiser jogar
+        while (continuePlaying) {
+            Player player = players.get(playerIndex);
+            Deck deck = new Deck(); // Cria e baralha um novo baralho em cada ronda
+            Card currentCard = deck.dealCard();
             int pointsRound = 0;
             boolean roundActive = true;
-            Card currentCard = deck.dealCard();
+            roundsPlayed++;
 
-            System.out.println("\nRONDA " + roundsPlayed);
+            System.out.println("\n-----------------------------");
+            System.out.println("RONDA " + roundsPlayed);
+            player.startRound();
 
             // Continuar a ronda enquanto o jogador acertar e existirem cartas
             while (roundActive && deck.cardsLeft() > 0) {
-                System.out.println(currentCard);
-                System.out.print("Próxima carta é mais alta (A) ou mais baixa (B)? ");
-                // Proteção contra null e EOF
-                if (!scanner.hasNextLine()) {
-                    System.out.println("Input inválido.");
-                    break;
-                }
-                // Scanner para ler o input do jogador usando trim para remover espaços e toUpperCase para converter o input para maiúsculas
+                System.out.println("\nCarta atual: " + currentCard);
+                System.out.print("Próxima carta é mais alta (H) ou mais baixa (L)? ");
                 String choice = scanner.nextLine().trim().toUpperCase();
 
-                // Validar a escolha usando o método equals para comparar strings
-                while (!choice.equals("A") && !choice.equals("B")) {
-                    System.out.print("Escolha inválida. Escreve A ou B: ");
-                    // Proteção contra null e EOF
-                    if (!scanner.hasNextLine()) {
-                        System.out.println("Input inválido.");
-                        break;
-                    }
+                // Validar a escolha
+                while (!choice.equals("H") && !choice.equals("L")) {
+                    System.out.print("Escolha inválida. Escreve H ou L: ");
                     choice = scanner.nextLine().trim().toUpperCase();
                 }
 
-                // Retira a próxima carta
                 Card nextCard = deck.dealCard();
+                System.out.println("Carta seguinte: " + nextCard);
 
-                System.out.println(nextCard);
-
-                // Obtem os valores da próxima carta
                 int currentValue = currentCard.getValue();
                 int nextValue = nextCard.getValue();
 
-                // Verifica se as duas cartas tem o mesmo valor, se forem iguais a ronda acaba
+                // Se as cartas forem iguais, a ronda termina para todos os jogadores
                 if (nextValue == currentValue) {
-                    System.out.println("As cartas são do mesmo valor! Perdeste a ronda.");
+                    System.out.println("As cartas têm o mesmo valor! A ronda terminou.");
                     roundActive = false;
-                //Se a escolha for A significa que a próxima carta deve ser maior, caso contrário deve ser menor
-                } else if ((choice.equals("A") && nextValue > currentValue) || (choice.equals("B") && nextValue < currentValue))
-                {
+                } else if ((choice.equals("H") && nextValue > currentValue)
+                        || (choice.equals("L") && nextValue < currentValue)) {
                     pointsRound++;
+                    correctGuesses++;
                     System.out.println("Acertaste! Pontuação da ronda: " + pointsRound);
-                    // A próxima carta passa a ser a carta atual
                     currentCard = nextCard;
                 } else {
-                    // Se a escolha estiver errada, a ronda termina
-                    System.out.println("Erraste! A ronda terminou.");
-                    roundActive = false;
+                    System.out.println("Erraste a previsão!");
+
+                    // O jogador especial pode tentar outra vez uma vez por ronda
+                    if (player.canRetry()) {
+                        System.out.println("Tens direito a uma segunda previsão para a mesma carta.");
+                        System.out.print("Mais alta (H) ou mais baixa (L)? ");
+                        String secondChoice = scanner.nextLine().trim().toUpperCase();
+
+                        while (!secondChoice.equals("H") && !secondChoice.equals("L")) {
+                            System.out.print("Escolha inválida. Escreve H ou L: ");
+                            secondChoice = scanner.nextLine().trim().toUpperCase();
+                        }
+
+                        if ((secondChoice.equals("H") && nextValue > currentValue)
+                                || (secondChoice.equals("L") && nextValue < currentValue)) {
+                            pointsRound++;
+                            correctGuesses++;
+                            System.out.println("Acertaste na segunda previsão!");
+                            currentCard = nextCard;
+                        } else {
+                            System.out.println("Erraste novamente! A ronda terminou.");
+                            roundActive = false;
+                        }
+                    } else {
+                        System.out.println("A ronda terminou.");
+                        roundActive = false;
+                    }
                 }
             }
-            // Atualiza a pontuação total, somando os pontos da última ronda
+
+            // Guardar os resultados da ronda no jogador
+            player.registerRound(pointsRound);
             totalPoints += pointsRound;
-            // Apresenta os resultados da ronda e o número de cartas restantes
-            System.out.println("\nPontuação da ronda " + roundsPlayed + ": " + pointsRound);
-            System.out.println("Cartas restantes: " + deck.cardsLeft());
 
-            // Só é possível jogar outra ronda com pelo menos duas cartas
-            if (deck.cardsLeft() < 2) {
-                System.out.println("Não existem cartas suficientes para iniciar outra ronda.");
-                continuePlaying = false;
-            } 
-            else {
-                System.out.print("Queres jogar novamente? (S/N): ");
-                // Proteção contra null e EOF
-                if (!scanner.hasNextLine()) {
-                    System.out.println("Input inválido.");
-                    break;
-                }
-                String answer = scanner.nextLine().trim().toUpperCase();
+            System.out.println("\nRESULTADO DA RONDA");
+            System.out.println("Jogador: " + player.getName());
+            System.out.println("Pontuação da ronda: " + pointsRound);
+            System.out.println("Pontuação acumulada: " + player.getTotalScore());
+            System.out.println("Rondas do jogador: " + player.getRoundNumber());
 
-                // Validar a resposta
-                while (!answer.equals("S") && !answer.equals("N")) {
-                    System.out.print("Resposta inválida. Escreve S ou N: ");
-                    // Proteção contra null e EOF
-                    if (!scanner.hasNextLine()) {
-                        System.out.println("Input inválido.");
-                        break;
-                    }
-                    answer = scanner.nextLine().trim().toUpperCase();
-                }
-                // Se a resposta for S o jogo continua, caso contrário, termina
-                continuePlaying = answer.equals("S");
+            // Perguntar se o torneio deve continuar
+            System.out.print("\nQueres continuar o torneio? (S/N): ");
+            String answer = scanner.nextLine().trim().toUpperCase();
+            while (!answer.equals("S") && !answer.equals("N")) {
+                System.out.print("Resposta inválida. Escreve S ou N: ");
+                answer = scanner.nextLine().trim().toUpperCase();
+            }
+            continuePlaying = answer.equals("S");
+
+            // Passar ao jogador seguinte e voltar ao primeiro no fim da lista
+            playerIndex++;
+            if (playerIndex >= players.size()) {
+                playerIndex = 0;
             }
         }
-        // Cria a variável para calcular a média
-        float averagePoints = 0;
 
-        // Calcula a média
-        averagePoints = (float) totalPoints / roundsPlayed;
-        
-        // Apresenta os resultados finais do jogo
-        System.out.println("\nRESULTADO FINAL");
-        System.out.println("Rondas jogadas: " + roundsPlayed);
-        System.out.println("Pontuação total: " + totalPoints);
-        System.out.printf("Pontuação média por ronda: %.2f%n", averagePoints);
+        // Apresentar o relatório final de todos os jogadores
+        System.out.println("\n========== RESULTADO FINAL DO TORNEIO ==========");
+        int bestTotalScore = 0;
 
-        // Fecha o scanner para evitar memory leaks
+        for (Player player : players) {
+            System.out.println("\nJogador: " + player.getName());
+            System.out.println("Pontuação acumulada: " + player.getTotalScore());
+            System.out.println("Rondas realizadas: " + player.getRoundNumber());
+            System.out.printf("Média de pontos por ronda: %.2f%n", player.calculateAverage());
+            System.out.println("Melhor pontuação numa ronda: " + player.getBestScore());
+            System.out.println("Histórico de pontuações: " + player.getScoreHistory());
+
+            if (player.getTotalScore() > bestTotalScore) {
+                bestTotalScore = player.getTotalScore();
+            }
+        }
+
+        // Estatísticas globais
+        System.out.println("\nESTATÍSTICAS DO TORNEIO");
+        System.out.println("Jogadores inscritos: " + players.size());
+        System.out.println("Rondas realizadas: " + roundsPlayed);
+        System.out.println("Previsões corretas: " + correctGuesses);
+        System.out.println("Pontos atribuídos: " + totalPoints);
+
+        // Mostrar todos os jogadores com a maior pontuação
+        System.out.println("\nVENCEDOR(ES) DO TORNEIO");
+        for (Player player : players) {
+            if (player.getTotalScore() == bestTotalScore) {
+                System.out.println(player.getName() + " - " + player.getTotalScore() + " pontos");
+            }
+        }
         scanner.close();
     }
 }
