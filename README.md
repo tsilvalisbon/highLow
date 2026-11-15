@@ -1,6 +1,6 @@
 # HighLow
 
-Primeiro miniprojeto da unidade curricular de Programação Orientada a Objetos em Java.
+Segundo miniprojeto da unidade curricular de Programação Orientada a Objetos em Java.
 
 ## Autores
 
@@ -16,22 +16,20 @@ O jogador deve adivinhar se a próxima carta terá um valor superior ou inferior
 
 No final de cada ronda, o jogador pode escolher continuar, desde que existam cartas suficientes. Quando o jogo termina, são apresentados o número de rondas, a pontuação total e a pontuação média por ronda.
 
-## Regras do jogo
+Esta versão organiza o jogo num torneio com vários participantes. Cada jogador possui um perfil, normal ou especial, e mantém os seus resultados entre rondas. No final, são apresentados os resultados individuais, as estatísticas globais e todos os vencedores em caso de empate.
 
-1. O baralho é criado e baralhado no início do programa.
-2. É retirada uma carta e apresentada ao jogador.
-3. O jogador escolhe:
-   - `A` — a próxima carta terá um valor mais alto;
-   - `B` — a próxima carta terá um valor mais baixo.
-4. A próxima carta é retirada e apresentada.
-5. Se a previsão estiver correta, o jogador ganha um ponto e a carta revelada passa a ser a carta atual.
-6. Se a previsão estiver errada ou as cartas tiverem o mesmo valor, a ronda termina.
-7. No final da ronda, o jogador escolhe:
-   - `S` — jogar outra ronda;
-   - `N` — terminar o jogo.
-8. O jogo também termina quando não existem pelo menos duas cartas para iniciar uma nova ronda.
+## Regras do torneio
 
-O mesmo baralho é utilizado ao longo das várias rondas. As cartas já distribuídas não voltam a ser utilizadas e o baralho não é novamente baralhado entre rondas.
+1. Antes de começar, é indicado o número de jogadores e são registados o nome e o perfil de cada participante.
+2. Os jogadores participam pela ordem de inscrição. Cada ronda pertence a um único jogador.
+3. No início de cada ronda, é criado um novo baralho de 52 cartas, que é baralhado pelo seu construtor. É retirada uma carta de referência.
+4. Antes de retirar a carta seguinte, o jogador escolhe `H` para prever um valor mais alto ou `L` para prever um valor mais baixo.
+5. Cada previsão correta atribui um ponto. A carta revelada passa a ser a referência da próxima jogada.
+6. Quando duas cartas têm o mesmo valor, a ronda termina para qualquer perfil, sem atribuir um ponto por essa previsão.
+7. Uma previsão errada termina a ronda, exceto quando o jogador especial ainda pode utilizar a sua segunda oportunidade.
+8. A ronda também termina quando não existem mais cartas no baralho.
+9. Depois do resultado da ronda, é perguntado se o torneio deve continuar: `S` para continuar ou `N` para terminar.
+10. Se continuar, joga o participante seguinte. Depois do último inscrito, a sequência recomeça no primeiro, sem apagar os resultados acumulados.
 
 ### Card.java
 
@@ -58,6 +56,33 @@ Utiliza os seguintes atributos privados:
 
 - `cards`: array com as 52 cartas;
 - `cardsLeft`: número de cartas ainda disponíveis.
+
+### Player
+
+É uma classe abstrata que concentra os dados e as operações comuns aos dois perfis de jogador.
+
+Os atributos privados guardam o nome (`name`), a pontuação acumulada (`totalScore`), o número de rondas registadas (`roundsPlayed`) e o histórico das pontuações (`scoreHistory`).
+
+- `registerRound(int points)`: soma os pontos ao total, incrementa as rondas do jogador e guarda a pontuação no histórico.
+- `calculateAverage()`: calcula a média com divisão em `double`; devolve zero quando o jogador ainda não tem rondas registadas.
+- `getBestScore()`: percorre o histórico e devolve a maior pontuação de uma ronda, ou zero se o histórico estiver vazio.
+- `getScoreHistory()`: devolve uma cópia da lista, impedindo que uma alteração à lista recebida modifique o histórico interno.
+- `startRound()`: apresenta a mensagem de início da ronda do jogador.
+- `canRetry()`: método abstrato cuja implementação depende do perfil.
+
+A classe não pode ser instanciada diretamente. Os participantes são criados como `NormalPlayer` ou `SpecialPlayer`.
+
+### NormalPlayer
+
+Herda os dados e os métodos de `Player`. O construtor chama `super(name)` e a implementação de `canRetry()` devolve sempre `false`, impedindo uma segunda previsão após uma falha.
+
+### SpecialPlayer
+
+Herda de `Player` e acrescenta o atributo privado `retryUsed`.
+
+O método `canRetry()` verifica e consome a oportunidade: se ainda não foi utilizada, marca-a como usada e devolve `true`; caso contrário, devolve `false`.
+
+O método `startRound()` é sobrescrito para chamar a implementação da superclasse e repor `retryUsed` a `false`. Assim, a oportunidade volta a estar disponível na ronda seguinte do mesmo jogador.
 
 #### Construção do baralho
 
@@ -120,6 +145,17 @@ Contém o método `main()` e controla a execução do jogo.
 - perguntar se o jogador pretende continuar;
 - apresentar os resultados finais.
 
+### HighLow
+
+Contém o método `main()` e controla a execução do jogo.
+
+Os jogadores são guardados num `ArrayList<Player>`. O índice `playerIndex` identifica o participante atual, avança depois de cada ronda e regressa a zero quando chega ao fim da lista.
+
+A classe inclui dois métodos auxiliares principais:
+
+- `readOption(Scanner scanner, String message, String... options)`: apresenta uma pergunta, lê a resposta e repete enquanto não corresponder a uma das opções permitidas.
+- `isCorrect(...)`: verifica se uma previsão corresponde à relação entre os valores das cartas, através de duas versões sobrecarregadas.
+
 ## Controlo das rondas
 
 A implementação utiliza dois ciclos principais:
@@ -147,54 +183,6 @@ Desta forma, respostas como `a`, `A` e ` A ` são interpretadas da mesma maneira
 As previsões só aceitam `A` ou `B`. A decisão de continuar só aceita `S` ou `N`. Quando uma resposta não pertence às opções permitidas, o programa apresenta uma mensagem e volta a pedir uma resposta.
 
 O código também utiliza `hasNextLine()` antes das leituras para detetar o fim da entrada e evitar chamar `nextLine()` quando não existe uma linha disponível.
-
-## Pontuação e resultados
-
-O programa mantém três contadores:
-
-- `roundsPlayed`: número de rondas iniciadas
-- `pointsRound`: pontos obtidos na ronda atual
-- `totalPoints`: soma dos pontos das rondas
-
-A média é calculada dividindo a pontuação total pelo número de rondas:
-
-```java
-averagePoints = (float) totalPoints / roundsPlayed;
-```
-
-A conversão para `float` permite obter um resultado com casas decimais.
-
-No final, são apresentados:
-
-- número de rondas jogadas;
-- pontuação total;
-- pontuação média por ronda, formatada com duas casas decimais.
-
-## Compilação e execução
-
-É necessário ter um JDK instalado.
-
-```text
-highLow/
-├── README.md
-└── src/
-    ├── Card.java
-    ├── Deck.java
-    └── HighLow.java
-```
-
-A partir da pasta `highLow`, compilar com:
-
-```bash
-javac src/*.java
-```
-Executar com:
-```bash
-java highLow.src.HighLow
-```
-
-## Modelo de Dominio
-<img width="826" height="534" alt="Modelo de Dominio" src="https://github.com/user-attachments/assets/f3448312-6e3d-4391-a442-0e97949e47b7" />
 
 ## Inteligência Artificial
 

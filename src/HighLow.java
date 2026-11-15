@@ -33,6 +33,11 @@ public class HighLow {
     return (choice.equals("H") && nextValue > currentValue) || (choice.equals("L") && nextValue < currentValue);
     }
 
+    // Sobrecarga: recebe as cartas e reutiliza a comparação dos valores.
+    private static boolean isCorrect(String choice, Card currentCard, Card nextCard) {
+        return isCorrect(choice, currentCard.getValue(), nextCard.getValue());
+    }
+
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         ArrayList<Player> players = new ArrayList<>();
@@ -123,7 +128,7 @@ public class HighLow {
                     System.out.println("As cartas têm o mesmo valor! A ronda terminou.");
                     roundActive = false;
                 // Se a previsão estiver correta, a ronda continua; caso contrário, verifica se o jogador pode tentar novamente
-                } else if (isCorrect(choice, currentValue, nextValue)) {
+                } else if (isCorrect(choice, currentCard, nextCard)) {
                     pointsRound++;
                     correctGuesses++;
                     System.out.println("Acertaste! Pontuação da ronda: " + pointsRound);
@@ -137,7 +142,7 @@ public class HighLow {
                         String secondChoice = readOption(scanner, "Mais alta (H) ou mais baixa (L)? ", "H", "L");
 
                     // Verificar se a segunda previsão está correta
-                    if (isCorrect(secondChoice, currentValue, nextValue)) {
+                    if (isCorrect(secondChoice, currentCard, nextCard)) {
                         pointsRound++;
                         correctGuesses++;
                         System.out.println("Acertaste na segunda previsão!");
